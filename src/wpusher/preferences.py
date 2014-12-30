@@ -21,22 +21,22 @@ class Model(object):
         GenerateShortcut(
             win32con.MOD_ALT | win32con.MOD_WIN,
             win32con.VK_RIGHT,
-            lambda Controller: Controller.DisplayNextDesktop()
+            lambda Controller: Controller.display_next()
         ),
         GenerateShortcut(
             win32con.MOD_ALT | win32con.MOD_WIN,
             win32con.VK_LEFT,
-            lambda Controller: Controller.DisplayPreviousDesktop()
+            lambda Controller: Controller.display_previous()
         ),
         GenerateShortcut(
             win32con.MOD_CONTROL | win32con.MOD_WIN,
             win32con.VK_RIGHT,
-            lambda Controller: Controller.MoveWindowToNextDesktopAndDisplay()
+            lambda Controller: Controller.move_window_to_next_desktop_and_display()
         ),
         GenerateShortcut(
             win32con.MOD_CONTROL | win32con.MOD_WIN,
             win32con.VK_LEFT,
-            lambda Controller: Controller.MoveWindowToPreviousDesktopAndDisplay()
+            lambda Controller: Controller.move_window_to_previous_desktop_and_display()
         )
         )
 
@@ -67,23 +67,23 @@ class Controller(object):
         self.EventIDs = []
 
     def DisplayNextDesktop(self):
-        self.DesktopManager.DisplayNextDesktop()
+        self.DesktopManager.display_next()
         self.MIController.Next()
 
     def DisplayPreviousDesktop(self):
-        self.DesktopManager.DisplayPreviousDesktop()
+        self.DesktopManager.display_previous()
         self.MIController.Previous()
 
     def MoveWindowToNextDesktopAndDisplay(self):
         try:
-            self.DesktopManager.MoveWindowToNextDesktopAndDisplay()
+            self.DesktopManager.move_window_to_next_desktop_and_display()
             self.MIController.Next()
         except vdesk.NoForegroundWindow:
             pass
 
     def MoveWindowToPreviousDesktopAndDisplay(self):
         try:
-            self.DesktopManager.MoveWindowToPreviousDesktopAndDisplay()
+            self.DesktopManager.move_window_to_previous_desktop_and_display()
             self.MIController.Previous()
         except vdesk.NoForegroundWindow:
             pass
@@ -93,7 +93,7 @@ class Controller(object):
 
     def Exit(self):
         self.UnregisterHotKeys()
-        self.DesktopManager.ShowAllWindows()
+        self.DesktopManager.show_all_windows()
         self.TaskBarIcon.RemoveIcon()
         sys.exit(1)
 
@@ -147,10 +147,10 @@ class TaskBarIcon(wx.TaskBarIcon):
                       lambda Event: self.Controller.Exit(),
                       id=self.EventIDs["Exit"])
             self.Bind(wx.EVT_MENU,
-                      lambda Event: self.Controller.DisplayNextDesktop(),
+                      lambda Event: self.Controller.display_next(),
                       id=self.EventIDs["NextDesktop"])
             self.Bind(wx.EVT_MENU,
-                      lambda Event: self.Controller.DisplayPreviousDesktop(),
+                      lambda Event: self.Controller.display_previous(),
                       id=self.EventIDs["PreviousDesktop"])
 
         CreateChildWidgets()
