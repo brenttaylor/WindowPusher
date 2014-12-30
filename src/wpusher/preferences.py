@@ -9,35 +9,35 @@ class Model(object):
     def __init__(self):
         pass
 
-    def ShortcutData(self):
-        def GenerateShortcut(Modifiers, Key, Function):
+    def shortcut_data(self):
+        def generate_shortcut(Modifiers, Key, Function):
             return {
-            "Modifiers": Modifiers,
-            "Key": Key,
-            "Function": Function
+                "Modifiers": Modifiers,
+                "Key": Key,
+                "Function": Function
             }
 
         return (
-        GenerateShortcut(
-            win32con.MOD_ALT | win32con.MOD_WIN,
-            win32con.VK_RIGHT,
-            lambda Controller: Controller.display_next()
-        ),
-        GenerateShortcut(
-            win32con.MOD_ALT | win32con.MOD_WIN,
-            win32con.VK_LEFT,
-            lambda Controller: Controller.display_previous()
-        ),
-        GenerateShortcut(
-            win32con.MOD_CONTROL | win32con.MOD_WIN,
-            win32con.VK_RIGHT,
-            lambda Controller: Controller.move_window_to_next_desktop_and_display()
-        ),
-        GenerateShortcut(
-            win32con.MOD_CONTROL | win32con.MOD_WIN,
-            win32con.VK_LEFT,
-            lambda Controller: Controller.move_window_to_previous_desktop_and_display()
-        )
+            generate_shortcut(
+                win32con.MOD_ALT | win32con.MOD_WIN,
+                win32con.VK_RIGHT,
+                lambda Controller: Controller.display_next()
+            ),
+            generate_shortcut(
+                win32con.MOD_ALT | win32con.MOD_WIN,
+                win32con.VK_LEFT,
+                lambda Controller: Controller.display_previous()
+            ),
+            generate_shortcut(
+                win32con.MOD_CONTROL | win32con.MOD_WIN,
+                win32con.VK_RIGHT,
+                lambda Controller: Controller.move_window_to_next_desktop_and_display()
+            ),
+            generate_shortcut(
+                win32con.MOD_CONTROL | win32con.MOD_WIN,
+                win32con.VK_LEFT,
+                lambda Controller: Controller.move_window_to_previous_desktop_and_display()
+            )
         )
 
 
@@ -48,56 +48,56 @@ class Controller(object):
         self.Model = Model()
         self.Window = Window(self)
         self.TaskBarIcon = TaskBarIcon(self.Window, self)
-        self.RegisterHotKeys(self.Model.ShortcutData())
+        self.register_hot_keys(self.Model.shortcut_data())
         self.MIController = movementindicator.Controller()
 
-    def RegisterHotKeys(self, Hotkeys):
-        def RegisterHotkey(Hotkey):
+    def register_hot_keys(self, Hotkeys):
+        def register_hotkey(Hotkey):
             ID = wx.NewId()
             self.Window.RegisterHotKey(ID, Hotkey["Modifiers"], Hotkey["Key"])
             self.Window.Bind(wx.EVT_HOTKEY, lambda Event: Hotkey["Function"](self),
                              id=ID)
             self.EventIDs.append(ID)
 
-        [RegisterHotkey(Hotkey) for Hotkey in Hotkeys]
+        [register_hotkey(Hotkey) for Hotkey in Hotkeys]
 
-    def UnregisterHotKeys(self):
+    def unregister_hotkeys(self):
         for ID in self.EventIDs:
             self.Window.UnregisterHotKey(ID)
         self.EventIDs = []
 
-    def DisplayNextDesktop(self):
+    def display_next_desktop(self):
         self.DesktopManager.display_next()
         self.MIController.Next()
 
-    def DisplayPreviousDesktop(self):
+    def display_previous_desktop(self):
         self.DesktopManager.display_previous()
         self.MIController.Previous()
 
-    def MoveWindowToNextDesktopAndDisplay(self):
+    def move_window_to_next_desktop_and_display(self):
         try:
             self.DesktopManager.move_window_to_next_desktop_and_display()
             self.MIController.Next()
         except vdesk.NoForegroundWindow:
             pass
 
-    def MoveWindowToPreviousDesktopAndDisplay(self):
+    def move_window_to_previous_desktop_and_display(self):
         try:
             self.DesktopManager.move_window_to_previous_desktop_and_display()
             self.MIController.Previous()
         except vdesk.NoForegroundWindow:
             pass
 
-    def Close(self):
+    def close(self):
         self.Window.Hide()
 
-    def Exit(self):
-        self.UnregisterHotKeys()
+    def exit(self):
+        self.unregister_hotkeys()
         self.DesktopManager.show_all_windows()
         self.TaskBarIcon.RemoveIcon()
         sys.exit(1)
 
-    def IconDblClick(self):
+    def icon_dbl_click(self):
         if self.Window.IsIconized():
             self.Window.Iconize(False)
         if not self.Window.IsShown():
@@ -109,28 +109,27 @@ class TaskBarIcon(wx.TaskBarIcon):
     def __init__(self, Parent, Controller):
         wx.TaskBarIcon.__init__(self)
 
-        def CreateChildWidgets():
+        def create_child_widgets():
             self.Icon = wx.EmptyIcon()
             self.ParentFrame = Parent
             self.Controller = Controller
             self.Menu = wx.Menu()
 
-
-        def Configure():
+        def configure():
             self.EventIDs = {
-            "NextDesktop": wx.NewId(),
-            "PreviousDesktop": wx.NewId(),
-            "Exit": wx.NewId(),
-            "LaunchPreferences": wx.NewId(),
-            "LaunchMenu": wx.NewId()
+                "NextDesktop": wx.NewId(),
+                "PreviousDesktop": wx.NewId(),
+                "Exit": wx.NewId(),
+                "LaunchPreferences": wx.NewId(),
+                "LaunchMenu": wx.NewId()
             }
 
-            def LoadBitmap():
+            def load_bitmap():
                 image = wx.Image("Resources/icon.bmp", wx.BITMAP_TYPE_ANY)
                 image.SetMaskColour(255, 0, 255)
                 return wx.BitmapFromImage(image)
 
-            self.Icon.CopyFromBitmap(LoadBitmap())
+            self.Icon.CopyFromBitmap(load_bitmap())
             self.SetIcon(self.Icon, "WindowPusher")
 
             self.Menu.Append(self.EventIDs["NextDesktop"], "Display Next Desktop")
@@ -138,32 +137,32 @@ class TaskBarIcon(wx.TaskBarIcon):
             self.Menu.AppendSeparator()
             self.Menu.Append(self.EventIDs["Exit"], "Exit")
 
-        def BindEvents():
+        def bind_events():
             self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK,
-                      lambda Event: self.Controller.IconDblClick())
+                      lambda event: self.Controller.icon_dbl_click())
             self.Bind(wx.EVT_TASKBAR_RIGHT_UP,
-                      lambda Event: self.PopupMenu(self.Menu))
+                      lambda event: self.PopupMenu(self.Menu))
             self.Bind(wx.EVT_MENU,
-                      lambda Event: self.Controller.Exit(),
+                      lambda event: self.Controller.exit(),
                       id=self.EventIDs["Exit"])
             self.Bind(wx.EVT_MENU,
-                      lambda Event: self.Controller.display_next(),
+                      lambda event: self.Controller.display_next(),
                       id=self.EventIDs["NextDesktop"])
             self.Bind(wx.EVT_MENU,
-                      lambda Event: self.Controller.display_previous(),
+                      lambda event: self.Controller.display_previous(),
                       id=self.EventIDs["PreviousDesktop"])
 
-        CreateChildWidgets()
-        Configure()
-        BindEvents()
+        create_child_widgets()
+        configure()
+        bind_events()
 
 
 class GeneralTab(wx.Panel):
-    def __init__(self, Parent, Controller):
-        wx.Panel.__init__(self, parent=Parent, id=wx.ID_ANY)
-        self.Controller = Controller
+    def __init__(self, parent, controller):
+        wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
+        self.Controller = controller
 
-        def CreateChildWidgets():
+        def create_child_widgets():
             self.RootSizer = wx.BoxSizer(wx.VERTICAL)
             self.stNumDesktops = wx.StaticText(self, wx.ID_ANY,
                                                label="Number of Desktops?")
@@ -182,8 +181,8 @@ class GeneralTab(wx.Panel):
             self.btnKeyboardShortcuts = wx.Button(self, wx.ID_ANY,
                                                   "Keyboard Shortcuts", (50, 130))
 
-        def Configure():
-            def HorizontalSizer(Widgets):
+        def configure():
+            def horizontal_sizer(Widgets):
                 sizer = wx.BoxSizer(wx.HORIZONTAL)
                 for Widget in Widgets:
                     sizer.Add(Widget, 0, wx.ALL, 5)
@@ -192,8 +191,8 @@ class GeneralTab(wx.Panel):
             self.scNumDesktops.SetRange(1, 4)
             self.scNumDesktops.SetValue(4)
 
-            sizerNumDesktops = HorizontalSizer((self.stNumDesktops, self.scNumDesktops))
-            sizerDesktopIndicatorDelay = HorizontalSizer(
+            sizerNumDesktops = horizontal_sizer((self.stNumDesktops, self.scNumDesktops))
+            sizerDesktopIndicatorDelay = horizontal_sizer(
                 (self.stDesktopIndicatorDelay,
                  self.slDesktopIndicatorDelay)
             )
@@ -207,12 +206,12 @@ class GeneralTab(wx.Panel):
             self.RootSizer.Add(self.btnKeyboardShortcuts, 0, wx.LEFT)
             self.SetSizer(self.RootSizer)
 
-        def BindEvents():
+        def bind_events():
             pass
 
-        CreateChildWidgets()
-        Configure()
-        BindEvents()
+        create_child_widgets()
+        configure()
+        bind_events()
 
 
 class PreferencesNotebook(wx.Notebook):
@@ -220,18 +219,18 @@ class PreferencesNotebook(wx.Notebook):
         wx.Notebook.__init__(self, Parent, id=wx.ID_ANY, style=wx.BK_DEFAULT)
         self.Controller = Controller
 
-        def CreateChildWidgets():
+        def create_child_widgets():
             self.General = GeneralTab(self, Controller)
 
-        def Configure():
+        def configure():
             self.AddPage(self.General, "General")
 
-        def BindEvents():
+        def bind_events():
             pass
 
-        CreateChildWidgets()
-        Configure()
-        BindEvents()
+        create_child_widgets()
+        configure()
+        bind_events()
 
 
 class Window(wx.Frame):
@@ -241,14 +240,14 @@ class Window(wx.Frame):
         self.Controller = Controller
         self.EventIDs = []
 
-        def CreateChildWidgets():
+        def create_child_widgets():
             self.Panel = wx.Panel(self, wx.ID_ANY)
             self.RootSizer = wx.BoxSizer(wx.VERTICAL)
             self.Notebook = PreferencesNotebook(self.Panel, Controller)
             self.btnClose = wx.Button(self.Panel, wx.ID_ANY, "Close", (50, 130))
             self.btnApply = wx.Button(self.Panel, wx.ID_ANY, "Apply", (50, 130))
 
-        def Configure():
+        def configure():
             self.Controller = Controller
             self.EventIDs = []
 
@@ -263,11 +262,11 @@ class Window(wx.Frame):
 
         # self.Layout()
 
-        def BindEvents():
-            self.Bind(wx.EVT_CLOSE, lambda Event: self.Controller.Close())
-            self.btnClose.Bind(wx.EVT_BUTTON, lambda Event: self.Controller.Close())
-            self.btnApply.Bind(wx.EVT_BUTTON, lambda Event: self.Controller.Close())
+        def bind_events():
+            self.Bind(wx.EVT_CLOSE, lambda Event: self.Controller.close())
+            self.btnClose.Bind(wx.EVT_BUTTON, lambda Event: self.Controller.close())
+            self.btnApply.Bind(wx.EVT_BUTTON, lambda Event: self.Controller.close())
 
-        CreateChildWidgets()
-        Configure()
-        BindEvents()
+        create_child_widgets()
+        configure()
+        bind_events()
