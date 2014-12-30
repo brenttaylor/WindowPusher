@@ -46,5 +46,3 @@ def SetForegroundWindow(hWnd):
     return windll.user32.SetForegroundWindow(hWnd)
 
 
-def GetForegroundWindow():
-    return windll.user32.GetForegroundWindow()
