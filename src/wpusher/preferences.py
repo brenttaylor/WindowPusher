@@ -68,23 +68,23 @@ class Controller(object):
 
     def display_next_desktop(self):
         self.DesktopManager.display_next()
-        self.MIController.Next()
+        self.MIController.next()
 
     def display_previous_desktop(self):
         self.DesktopManager.display_previous()
-        self.MIController.Previous()
+        self.MIController.previous()
 
     def move_window_to_next_desktop_and_display(self):
         try:
             self.DesktopManager.move_window_to_next_desktop_and_display()
-            self.MIController.Next()
+            self.MIController.next()
         except vdesk.NoForegroundWindow:
             pass
 
     def move_window_to_previous_desktop_and_display(self):
         try:
             self.DesktopManager.move_window_to_previous_desktop_and_display()
-            self.MIController.Previous()
+            self.MIController.previous()
         except vdesk.NoForegroundWindow:
             pass
 

@@ -15,11 +15,11 @@ class Controller(object):
         self.NextWindow = Window(self, "Resources/moveRight.png")
         self.PreviousWindow = Window(self, "Resources/moveLeft.png")
 
-    def Next(self):
-        self.NextWindow.Start(self.Model.GetDelay())
+    def next(self):
+        self.NextWindow.start(self.Model.GetDelay())
 
-    def Previous(self):
-        self.PreviousWindow.Start(self.Model.GetDelay())
+    def previous(self):
+        self.PreviousWindow.start(self.Model.GetDelay())
 
 
 # As a reminder, del DelayTimer on close to avoid memory leak
@@ -30,7 +30,7 @@ class Window(wx.Frame):
                                 wx.FRAME_NO_TASKBAR | wx.STAY_ON_TOP)
         self.Controller = Controller
 
-        def CreateChildWidgets():
+        def create_child_widgets():
             def CreateBitmap():
                 bmp = wx.Image(FrameShape, wx.BITMAP_TYPE_PNG)
                 bmp.ConvertAlphaToMask()
@@ -40,38 +40,38 @@ class Window(wx.Frame):
             self.DC = wx.ClientDC(self)
             self.DelayTimer = wx.Timer(self)
 
-        def Configure():
-            def SetFrameShape():
+        def configure():
+            def set_frame_shape():
                 self.SetClientSize((self.FrameShape.GetWidth(),
                                     self.FrameShape.GetHeight()))
                 self.DC.DrawBitmap(self.FrameShape, 0, 0, True)
                 self.SetShape(wx.RegionFromBitmap(self.FrameShape))
 
-            def MoveWindow():
+            def move_window():
                 ScreenRect = wx.Display().GetGeometry()
                 self.Move(((ScreenRect.GetWidth() / 2) - (self.FrameShape.GetWidth() / 2),
                            (ScreenRect.GetHeight() / 2) - (self.FrameShape.GetHeight() / 2)))
 
-            SetFrameShape()
-            MoveWindow()
+            set_frame_shape()
+            move_window()
             self.SetTransparent(220)
 
-        def BindEvents():
+        def bind_events():
             self.Bind(wx.EVT_PAINT,
                       lambda evt: wx.PaintDC(self).DrawBitmap(self.FrameShape,
                                                               0, 0, True))
             self.Bind(wx.EVT_WINDOW_CREATE,
                       lambda event=None: self.SetShape(wx.RegionFromBitmap(self.FrameShape)))
-            self.Bind(wx.EVT_TIMER, self.DelayEvent, self.DelayTimer)
+            self.Bind(wx.EVT_TIMER, self.delay_event, self.DelayTimer)
 
-        CreateChildWidgets()
-        Configure()
-        BindEvents()
+        create_child_widgets()
+        configure()
+        bind_events()
 
-    def DelayEvent(self, Evt):
+    def delay_event(self, Evt):
         self.DelayTimer.Stop()
         self.Show(False)
 
-    def Start(self, Delay):
+    def start(self, Delay):
         self.Show(True)
-        self.DelayTimer.Start(Delay)
+        self.DelayTimer.start(Delay)
